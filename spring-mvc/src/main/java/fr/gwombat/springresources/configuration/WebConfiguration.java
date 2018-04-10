@@ -11,8 +11,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.ContentVersionStrategy;
-import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
+import org.springframework.web.servlet.resource.CssLinkResourceTransformer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
+import org.springframework.web.servlet.resource.WebJarsResourceResolver;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -34,11 +35,20 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+        final VersionResourceResolver versionResourceResolver = new VersionResourceResolver().addVersionStrategy(new ContentVersionStrategy(), "/**");
+
         registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/")
                 .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS))
                 .resourceChain(true)
-                .addResolver(new VersionResourceResolver().addVersionStrategy(new ContentVersionStrategy(), "/**"));
+                .addResolver(new WebJarsResourceResolver())
+                .addResolver(versionResourceResolver)
+                .addTransformer(new CssLinkResourceTransformer());
+
+        registry.addResourceHandler("/static/**").addResourceLocations("/static/")
+                .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS))
+                .resourceChain(true)
+                .addResolver(versionResourceResolver)
+                .addTransformer(new CssLinkResourceTransformer());
     }
 
     @Bean
@@ -75,10 +85,5 @@ public class WebConfiguration implements WebMvcConfigurer {
         templateResolver.setTemplateMode(TemplateMode.HTML);
 
         return templateResolver;
-    }
-
-    @Bean
-    public ResourceUrlEncodingFilter resourceUrlEncodingFilter() {
-        return new ResourceUrlEncodingFilter();
     }
 }

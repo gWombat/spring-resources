@@ -1,7 +1,10 @@
 package fr.gwombat.springresources.initializer;
 
 import fr.gwombat.springresources.configuration.WebConfiguration;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import javax.servlet.Filter;
 
 /**
  * Created by guillaume.
@@ -22,5 +25,10 @@ public class AppInitializer extends AbstractAnnotationConfigDispatcherServletIni
     @Override
     protected String[] getServletMappings() {
         return new String[]{"/*"};
+    }
+
+    @Override
+    protected Filter[] getServletFilters() {
+        return new Filter[]{new ResourceUrlEncodingFilter()};
     }
 }
